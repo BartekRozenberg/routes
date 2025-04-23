@@ -1,60 +1,56 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mx-auto p-4">
-    <h2>{{ route.name|default:"Bezimienna droga" }}</h2>
-    <!-- Add Point -->
-    <form method="post" name="pointForm">
-        {% csrf_token %}
-        <div>
-            <div>
-                <label>współrzędna x</label>
-                {{ form.x }}
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="container max-w-2xl bg-white shadow-md rounded-lg p-6">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">{{ route.name|default:"Bezimienna droga" }}</h1>
+        
+        <!-- Formularz dodawania punktu -->
+        <form method="post" class="space-y-4 mb-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="id_x" class="block text-sm font-medium text-gray-700">Współrzędna X</label>
+                    {{ form.x }}
+                </div>
+                <div>
+                    <label for="id_y" class="block text-sm font-medium text-gray-700">Współrzędna Y</label>
+                    {{ form.y }}
+                </div>
             </div>
-            <div>
-                <label>współrzędna y</label>
-                {{ form.y }}
-            </div>
-            <div>
-                <button type="submit">
-                    Dodaj punkt
-                </button>
-            </div>
-        </div>
-    </form>
-    <!-- Image and Canvas -->
-    <div style="position: relative;">
-        <img src="{{ route.background.image.url }}"
+            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg">
+                Dodaj punkt
+            </button>
+        </form>
 
-             id="route-image"
-             style="width: 500px;
-                    height: 500px;">
-        <canvas id="route-canvas"
-                style="position: absolute;
-                        top: 0;
-                        left: 0;"
-                ></canvas>
-    </div>
-    <!-- Punkty  -->
-    <div>
-        <h3>Lista punktów</h3>
-        {% for point in points %}
-        <div>
-            <span class="font-mono">
-                Pozycja {{ point.order }}: x: {{ point.x }}; y: {{ point.y }}
-            </span>
-            <form method="post" action="{% url 'delete_point' route.id point.id %}">
-                {% csrf_token %}
-                <button type="submit">
-                    Usuń punkt
-                </button>
-            </form>
+        <!-- Obraz i canvas -->
+        <div class="relative mb-6">
+            <img src="{{ route.background.image.url }}" id="route-image" class="w-full h-auto rounded-lg shadow-md">
+            <canvas id="route-canvas" class="absolute top-0 left-0"></canvas>
         </div>
-        {% empty %}
-        <p>Nie ma jeszcze punktów. Dodaj nowe, aby zobaczyć je na mapie.</p>
-        {% endfor %}
+
+        <!-- Lista punktów -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Lista punktów</h3>
+            {% for point in points %}
+            <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow-sm">
+                <span class="font-mono text-gray-700">
+                    Pozycja {{ point.order }}: x: {{ point.x }}, y: {{ point.y }}
+                </span>
+                <form method="post" action="{% url 'delete_point' route.id point.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium">
+                        Usuń punkt
+                    </button>
+                </form>
+            </div>
+            {% empty %}
+            <p class="text-center text-gray-600">Nie ma jeszcze punktów. Dodaj nowe, aby zobaczyć je na mapie.</p>
+            {% endfor %}
+        </div>
     </div>
 </div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('route-canvas');
@@ -83,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     {% for point in points %}
     ctx.beginPath();
 
-    ctx.arc(x{{ point.order}}, y{{ point.order }}, 6, 0, 2 * Math.PI);
+    ctx.arc(x{{ point.order }}, y{{ point.order }}, 6, 0, 2 * Math.PI);
     ctx.fillStyle = '#2563EB'; // blue-600
     ctx.fill();
 

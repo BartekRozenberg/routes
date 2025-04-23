@@ -5,14 +5,14 @@
     <div class="container max-w-2xl bg-white shadow-md rounded-lg p-6">
         <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Twoje Trasy</h1>
         <button class="text-center mb-6">
-            <a href="{% url 'create_route' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg">
+            <a href="{% url 'create_route' %}" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg">
                 Utwórz Nową Trasę
             </a>
         </button>
         <div class="space-y-4">
             {% for route in routes %}
             <div class="border border-gray-300 rounded-lg p-4 hover:shadow-md">
-                <a href="{% url 'route_detail' route.id %}" class="text-lg font-semibold text-blue-500 hover:underline">
+                <a href="{% url 'route_detail' route.id %}" class="text-lg font-semibold text-emerald-500 hover:underline">
                     {{ route.name|default:"Unnamed Route" }}
                 </a>
                 <p class="text-sm text-gray-600">
