@@ -1,0 +1,21 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env/
+
+# Django
+db.sqlite3
+/media/
+staticfiles/
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Tailwind CSS
+output.css

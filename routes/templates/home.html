@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Strona Główna{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Witamy w Route Editor</h2>
+    <p>Wybierz jedną z poniższych opcji:</p>
+
+    <h3>Dodaj nową trasę</h3>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="name">Nazwa trasy:</label>
+        <input type="text" name="name" id="name" required>
+        <label for="background_image">Wybierz obraz tła:</label>
+        <select name="background_image" id="background_image">
+            {% for background in backgrounds %}
+            <option value="{{ background.id }}">{{ background.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Dodaj Trasę</button>
+    </form>
+
+    <h3>Twoje Trasy</h3>
+    <ul>
+        {% for route in routes %}
+        <li>
+            <a href="{% url 'edit_route' route.id %}">{{ route.name }}</a> - Obraz tła: {{ route.background_image.name }}
+        </li>
+        {% empty %}
+        <li>Nie masz jeszcze żadnych tras.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

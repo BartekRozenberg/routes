@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div>
+    <h1>Your Routes</h1>
+    <a href="{% url 'create_route' %}">
+        Create New Route
+    </a>
+
+    <div>
+        {% for route in routes %}
+        <div>
+            <a href="{% url 'route_detail' route.id %}">
+                {{ route.name|default:"Unnamed Route" }}
+            </a>
+            <p>
+                Created: {{ route.created_at|date:"M d, Y H:i" }}
+            </p>
+        </div>
+        {% empty %}
+        <p>No routes found. Create your first route!</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
