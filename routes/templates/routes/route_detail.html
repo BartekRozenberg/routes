@@ -24,9 +24,16 @@
         </form>
 
         <!-- Obraz i canvas -->
-        <div class="relative mb-6">
-            <img src="{{ route.background.image.url }}" id="route-image" class="w-full h-auto rounded-lg shadow-md">
-            <canvas id="route-canvas" class="absolute top-0 left-0"></canvas>
+        <div style="position: relative;">
+            <img src="{{ route.background.image.url }}"
+                 id="route-image"
+                 style="width: 900px;
+                        height: 446px;">
+            <canvas id="route-canvas"
+                    style="position: absolute;
+                            top: 0;
+                            left: 0;"
+                    ></canvas>
         </div>
 
         <!-- Lista punktów -->
