@@ -1,13 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="container">
-    <h2>Rejestracja</h2>
-    <form method="POST">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="btn btn-primary">Zarejestruj</button>
-    </form>
-    <p>Masz już konto? <a href="{% url 'login' %}">Zaloguj się</a></p>
+  <div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="container max-w-md bg-white shadow-md rounded-lg p-6">
+      <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Rejestracja</h2>
+      <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg">
+          Zarejestruj
+        </button>
+      </form>
+      <p class="text-center text-gray-600 mt-4">
+        Masz już konto? <a href="{% url 'login' %}" class="text-blue-500 hover:underline">Zaloguj się</a>
+      </p>
+    </div>
   </div>
 {% endblock %}
