@@ -23,7 +23,7 @@ def register(request):
 
 @login_required
 def route_list(request):
-    routes = Route.objects.all()
+    routes = Route.objects.filter(user=request.user)
     return render(request, 'routes/route_list.html', {'routes': routes})
 
 @login_required

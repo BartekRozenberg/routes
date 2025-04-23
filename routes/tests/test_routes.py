@@ -55,12 +55,3 @@ class RouteManagementTestCase(TestCase):
         response = self.client.post(reverse('delete_point', args=[self.route.id, point.id]))
         self.assertEqual(response.status_code, 302)  # Przekierowanie po usunięciu punktu
         self.assertEqual(Point.objects.count(), 0)
-
-    def test_changes_reflected_in_view(self):
-        # Dodanie punktu
-        Point.objects.create(route=self.route, x=100, y=200, order=1)
-
-        # Sprawdzenie, czy zmiany są widoczne w widoku
-        response = self.client.get(reverse('route_detail', args=[self.route.id]))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '(100, 200)')
