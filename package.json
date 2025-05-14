@@ -1,5 +1,28 @@
 {
   "dependencies": {
     "tailwindcss": "^4.1.4"
-  }
+  },
+  "name": "routesproject",
+  "version": "1.0.0",
+  "description": "",
+  "main": "tailwind.config.js",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BartekRozenberg/routes.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/BartekRozenberg/routes/issues"
+  },
+  "homepage": "https://github.com/BartekRozenberg/routes#readme"
 }
