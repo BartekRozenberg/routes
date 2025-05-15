@@ -19,15 +19,16 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('', views.index, name='index'),
     path('routes/', views.route_list, name='route_list'),
-    path('routes/create/', views.create_route, name='create_route'),
+    path('routes/create_board/', views.create_or_edit_board, name='create_or_edit_board'),
+    path('routes/edit_board/<int:board_id>/', views.create_or_edit_board, name='edit_board'),
+    path('routes/create_route/', views.create_route, name='create_route'),
     path('routes/<int:route_id>/', views.route_detail, name='route_detail'),
     path('routes/<int:route_id>/delete_point/<int:point_id>/', views.delete_point, name='delete_point'),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0)),
-    path('api/', include('routes.api.urls')),
-    path('api-auth/', include('rest_framework.urls')),
-    path('accounts/register/', views.register, name='register'),
+    path('routes/<int:board_id>/delete_board/', views.delete_board, name='delete_board'),  # Usuń planszę
+    path('routes/<int:route_id>/delete_route/', views.delete_route, name='delete_route'),  # Usuń trasę
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
-    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('', RedirectView.as_view(url='routes/', permanent=False), name='index'),
+    path('accounts/register/', views.register, name='register'),
 ]

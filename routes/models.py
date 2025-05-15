@@ -30,3 +30,14 @@ class Point(models.Model):
 
     class Meta:
         ordering = ['order']
+
+# Do przytrzymania informacji o kropkach na planszy
+class GameBoard(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    rows = models.IntegerField()
+    cols = models.IntegerField()
+    dots = models.JSONField(default=list)  # Przechowuje listę kropek w formacie JSON
+
+    def __str__(self):
+        return self.name

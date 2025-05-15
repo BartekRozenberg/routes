@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen bg-gray-100 flex-col space-y-6">
+    <h1 class="text-4xl font-bold text-gray-800">Witaj w Route Editor!</h1>
+    <div class="mt-6">
+        <a href="{% url 'route_list' %}" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg">
+            Przejdź do listy tras
+        </a>
+    </div>
+</div>
+{% endblock %}

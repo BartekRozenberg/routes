@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+{% load static %}
+<script src="{% static 'js/dist/board.js' %}"></script>
+
+<div class="min-h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+    <h2 class="text-2xl font-bold text-center mb-6">
+      {% if board %}Edytuj Planszę{% else %}Stwórz Nową Planszę{% endif %}
+    </h2>
+    <form id="board-form" method="post" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Nazwa planszy</label>
+        <input type="text" name="name" value="{{ board.name|default:'' }}"
+               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+               placeholder="Podaj nazwę planszy">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Liczba wierszy</label>
+          <input type="number" name="rows" value="{{ board.rows|default:5 }}"
+                 class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Liczba kolumn</label>
+          <input type="number" name="cols" value="{{ board.cols|default:5 }}"
+                 class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+      </div>
+      <div id="grid-container" class="mt-4 border rounded-lg p-4"></div>
+      <input type="hidden" name="dots" id="dots-input">
+      <div class="flex justify-between items-center mt-6">
+        <button type="submit"
+                class="bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors">
+          Zapisz
+        </button>
+        <a href="{% url 'route_list' %}"
+           class="text-gray-600 hover:text-gray-800 font-medium">
+          Anuluj
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

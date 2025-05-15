@@ -3,7 +3,36 @@
 {% block content %}
 <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="container max-w-2xl bg-white shadow-md rounded-lg p-6">
-        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Twoje Trasy</h1>
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Twoje Plansze</h1>
+        <button class="text-center mb-6">
+            <a href="{% url 'create_or_edit_board' %}" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg">
+                Utwórz Nową Planszę
+            </a>
+        </button>
+        <div class="space-y-4">
+            {% for board in boards %}
+            <div class="border border-gray-300 rounded-lg p-4 hover:shadow-md">
+                <div class="flex justify-between items-center">
+                    <a href="{% url 'edit_board' board.id %}" class="text-lg font-semibold text-blue-500 hover:underline">
+                        {{ board.name|default:"Unnamed Board" }}
+                    </a>
+                    <form method="post" action="{% url 'delete_board' board.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium">
+                            Usuń planszę
+                        </button>
+                    </form>
+                </div>
+                <p class="text-sm text-gray-600">
+                    Wymiary: {{ board.rows }} x {{ board.cols }}
+                </p>
+            </div>
+            {% empty %}
+            <p class="text-center text-gray-600 mb-6">Nie znaleziono plansz. Utwórz swoją pierwszą planszę!</p>
+            {% endfor %}
+        </div>
+
+        <h1 class="text-2xl font-bold text-center text-gray-800 mt-12 mb-6">Twoje Trasy</h1>
         <button class="text-center mb-6">
             <a href="{% url 'create_route' %}" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg">
                 Utwórz Nową Trasę
@@ -12,9 +41,17 @@
         <div class="space-y-4">
             {% for route in routes %}
             <div class="border border-gray-300 rounded-lg p-4 hover:shadow-md">
-                <a href="{% url 'route_detail' route.id %}" class="text-lg font-semibold text-emerald-500 hover:underline">
-                    {{ route.name|default:"Unnamed Route" }}
-                </a>
+                <div class="flex justify-between items-center">
+                    <a href="{% url 'route_detail' route.id %}" class="text-lg font-semibold text-emerald-500 hover:underline">
+                        {{ route.name|default:"Unnamed Route" }}
+                    </a>
+                    <form method="post" action="{% url 'delete_route' route.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium">
+                            Usuń trasę
+                        </button>
+                    </form>
+                </div>
                 <p class="text-sm text-gray-600">
                     Utworzono: {{ route.created_at|date:"M d, Y H:i" }}
                 </p>
