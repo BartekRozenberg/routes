@@ -3,6 +3,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const dotsInput = document.getElementById('dots-input') as HTMLInputElement;
     const rowsInput = document.querySelector('input[name="rows"]') as HTMLInputElement;
     const colsInput = document.querySelector('input[name="cols"]') as HTMLInputElement;
+    const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
+    const saveButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const form = document.getElementById('board-form') as HTMLFormElement;
+    const boardIdInput = document.getElementById('board-id') as HTMLInputElement;
+
+    console.log('saveButton:', saveButton);
 
     let dots: { row: number; col: number; color: string }[] = [];
     const colors = [
@@ -35,6 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.addEventListener('click', (event) => {
                     showColorPalette(event, cell, r, c);
                 });
+
+                // Wyświetl istniejące punkty z bazy danych
+                const existingDot = dots.find(dot => dot.row === r && dot.col === c);
+                if (existingDot) {
+                    console.log(`Przypisano punkt do komórki (${r}, ${c}):`, existingDot);
+                    cell.style.backgroundColor = existingDot.color;
+                }
             }
         }
     };
@@ -50,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         palettePopup.id = 'color-palette-popup';
         palettePopup.classList.add('absolute', 'bg-white', 'border', 'rounded-lg', 'p-2', 'shadow-lg');
         palettePopup.style.position = 'absolute';
-        palettePopup.style.top = `${event.clientY + 100}px`;
+        palettePopup.style.top = `${event.clientY + 200}px`;
         palettePopup.style.left = `${event.clientX}px`;
         palettePopup.style.zIndex = '1000';
         palettePopup.style.display = 'grid';
@@ -91,8 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { once: true });
     };
 
-    // Funkcja do umieszczania kropki na siatce
     const placeDot = (cell: HTMLElement, row: number, col: number, color: string) => {
+        console.log('Placing dot:', { row, col, color });
         if (dots.filter(dot => dot.color === color).length >= 2) {
             alert('Każdy kolor może mieć tylko dwie kropki.');
             return;
@@ -108,15 +121,97 @@ document.addEventListener('DOMContentLoaded', () => {
         dotsInput.value = JSON.stringify(dots);
     };
 
-    // Funkcja do usuwania kropki z siatki
     const removeDot = (cell: HTMLElement, row: number, col: number) => {
         dots = dots.filter(dot => !(dot.row === row && dot.col === col));
-        cell.style.backgroundColor = ''; // Usuń kolor z komórki
+        cell.style.backgroundColor = '';
         dotsInput.value = JSON.stringify(dots);
     };
+
+    // Obsługa zapisu planszy
+    form.addEventListener('submit', async (event) => {
+        console.log('Formularz został przesłany');
+        event.preventDefault();
+
+        const csrfTokenElement = document.querySelector('[name=csrfmiddlewaretoken]') as HTMLInputElement;
+        if (!csrfTokenElement || !csrfTokenElement.value) {
+            alert('Nie znaleziono tokenu CSRF. Odśwież stronę i spróbuj ponownie.');
+            return;
+        }
+
+        const boardData = {
+            name: nameInput.value.trim(),
+            rows: parseInt(rowsInput.value) || 0,
+            cols: parseInt(colsInput.value) || 0,
+            dots: dots
+        };
+
+        console.log('Dane planszy do zapisania:', boardData);
+
+        if (!boardData.name || boardData.rows <= 0 || boardData.cols <= 0) {
+            alert('Upewnij się, że nazwa, liczba wierszy i kolumn są poprawnie wypełnione.');
+            return;
+        }
+
+        try {
+            const boardId = boardIdInput.value; // Pobierz wartość board_id
+            const endpoint = boardId ? `/routes/edit_board/${boardId}/` : '/routes/create_board/';
+            console.log('Wysyłanie żądania na endpoint:', endpoint);
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfTokenElement.value
+                },
+                body: JSON.stringify(boardData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Błąd serwera:', errorData);
+                alert(`Błąd podczas zapisywania: ${errorData.message || 'Nieznany błąd'}`);
+                return;
+            }
+
+            const responseData = await response.json();
+            console.log('Plansza została zapisana pomyślnie:', responseData);
+
+            // Jeśli plansza została utworzona, zaktualizuj boardId i pozostaw użytkownika na stronie
+            if (!boardId) {
+                boardIdInput.value = responseData.board_id; // Zaktualizuj ukryte pole z board_id
+                alert('Nowa plansza została utworzona!');
+            } else {
+                alert('Plansza została zaktualizowana!');
+            }
+
+            // Pozostań na stronie edycji
+            console.log('Pozostajemy na stronie edycji planszy.');
+        } catch (error) {
+            console.error('Błąd podczas zapisywania planszy:', error);
+            alert('Wystąpił błąd podczas zapisywania planszy.');
+        }
+    });
 
     rowsInput.addEventListener('input', generateGrid);
     colsInput.addEventListener('input', generateGrid);
 
-    generateGrid(); // Wygeneruj siatkę na początku
+    // Pobierz istniejące dane planszy z bazy danych
+    try {
+        console.log('Wartość dotsInput.value przed parsowaniem:', dotsInput.value);
+
+        // Zamień pojedyncze cudzysłowy na podwójne, jeśli to konieczne
+        const fixedDotsValue = dotsInput.value.replace(/'/g, '"');
+        const existingDots = JSON.parse(fixedDotsValue || '[]');
+
+        if (Array.isArray(existingDots)) {
+            dots = existingDots;
+        } else {
+            console.error('Oczekiwano tablicy, ale otrzymano:', existingDots);
+        }
+    } catch (error) {
+        console.error('Błąd podczas parsowania JSON z dotsInput.value:', dotsInput.value, error);
+        dots = []; // Ustaw domyślną wartość, jeśli JSON jest niepoprawny
+    }
+
+    dotsInput.value = JSON.stringify(dots);
+    generateGrid();
 });

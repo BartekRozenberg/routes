@@ -1,6 +1,20 @@
 from django.contrib import admin
-from .models import Route, Point, BackgroundImage
+from .models import Route, Point, BackgroundImage, GameBoard
 
+@admin.register(GameBoard)
+class GameBoardAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'rows', 'cols')  # Pola wyświetlane w liście
+    search_fields = ('name', 'user__username')  # Pola, po których można wyszukiwać
+    list_filter = ('user',)  # Filtry po użytkowniku
+    ordering = ('name',)  # Domyślne sortowanie
+
+@admin.register(Point)
+class PointAdmin(admin.ModelAdmin):
+    list_display = ('route', 'x', 'y', 'order')  # Pola wyświetlane w liście
+    search_fields = ('route__name',)  # Wyszukiwanie po nazwie trasy
+    list_filter = ('route',)  # Filtry po trasie
+    ordering = ('route', 'order')  # Sortowanie po trasie i kolejności
+
+# Rejestracja istniejących modeli
 admin.site.register(Route)
-admin.site.register(Point)
 admin.site.register(BackgroundImage)

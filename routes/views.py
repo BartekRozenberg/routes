@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from routes.models import Route, Point
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Max
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 
 # Logowanie:
@@ -73,32 +73,40 @@ def delete_point(request, route_id, point_id):
 
 @login_required
 def create_or_edit_board(request, board_id=None):
-    if board_id:
-        board = get_object_or_404(GameBoard, id=board_id, user=request.user)
-    else:
-        board = None
+    if request.method == 'POST' and request.content_type == 'application/json':
+        import json
+        data = json.loads(request.body)
 
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        rows = int(request.POST.get('rows'))
-        cols = int(request.POST.get('cols'))
-        dots = request.POST.get('dots')  # JSON string
+        name = data.get('name')
+        rows = data.get('rows')
+        cols = data.get('cols')
+        dots = data.get('dots')
 
-        if board:
+        if not name or not rows or not cols or not dots:
+            return JsonResponse({'message': 'Nieprawidłowe dane.'}, status=400)
+
+        if board_id:
+            # Edycja istniejącej planszy
+            board = get_object_or_404(GameBoard, id=board_id, user=request.user)
             board.name = name
             board.rows = rows
             board.cols = cols
             board.dots = dots
             board.save()
         else:
-            GameBoard.objects.create(
+            # Tworzenie nowej planszy
+            board = GameBoard.objects.create(
                 user=request.user,
                 name=name,
                 rows=rows,
                 cols=cols,
                 dots=dots
             )
-        return redirect('route_list')
+
+        return JsonResponse({'message': 'Plansza została zapisana.', 'board_id': board.id})
+
+    # Pobranie planszy do edycji lub ustawienie na `None` dla nowej planszy
+    board = get_object_or_404(GameBoard, id=board_id, user=request.user) if board_id else None
 
     return render(request, 'routes/create_or_edit_board.html', {'board': board})
 
