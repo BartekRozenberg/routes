@@ -1,12 +1,16 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+{% load static %}
+<script src="{% static 'js/dist/utils.js' %}"></script>
+
 <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="container max-w-2xl bg-white shadow-md rounded-lg p-6">
         <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">{{ route.name|default:"Bezimienna droga" }}</h1>
-        
+
         <!-- Formularz dodawania punktu -->
-        <form method="post" class="space-y-4 mb-6">
+        <form id="point-form" method="post" class="space-y-4 mb-6">
             {% csrf_token %}
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -24,9 +28,8 @@
         </form>
 
         <!-- Obraz i canvas -->
-        <div style="position: relative;">
-            <img src="{{ route.background.image.url }}"
-                 id="route-image"
+        <div id="background-container" style="position: relative;">
+            <img id="route-image" src="{{ route.background.image.url }}"
                  style="width: 900px;
                         height: 446px;">
             <canvas id="route-canvas"
@@ -40,7 +43,8 @@
         <div class="space-y-4">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Lista punktów</h3>
             {% for point in points %}
-            <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow-sm" 
+                 data-x="{{ point.x }}" data-y="{{ point.y }}" data-order="{{ point.order }}">
                 <span class="font-mono text-gray-700">
                     Pozycja {{ point.order }}: x: {{ point.x }}, y: {{ point.y }}
                 </span>
