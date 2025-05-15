@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.classList.add('border', 'relative');
                 cell.dataset.row = r.toString();
                 cell.dataset.col = c.toString();
+                cell.style.position = 'relative'; // Ustawienie pozycji dla koła
                 cell.style.aspectRatio = '1 / 1';
                 gridContainer.appendChild(cell);
 
@@ -46,7 +47,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const existingDot = dots.find(dot => dot.row === r && dot.col === c);
                 if (existingDot) {
                     console.log(`Przypisano punkt do komórki (${r}, ${c}):`, existingDot);
-                    cell.style.backgroundColor = existingDot.color;
+
+                    // Dodaj koło reprezentujące punkt
+                    const dotElement = document.createElement('div');
+                    dotElement.classList.add('dot');
+                    dotElement.style.backgroundColor = existingDot.color;
+                    dotElement.style.width = '50%'; // Rozmiar koła jako procent wielkości kwadratu
+                    dotElement.style.height = '50%';
+                    dotElement.style.borderRadius = '50%';
+                    dotElement.style.position = 'absolute';
+                    dotElement.style.top = '25%';
+                    dotElement.style.left = '25%';
+                    cell.appendChild(dotElement);
                 }
             }
         }
@@ -106,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const placeDot = (cell: HTMLElement, row: number, col: number, color: string) => {
         console.log('Placing dot:', { row, col, color });
+
         if (dots.filter(dot => dot.color === color).length >= 2) {
             alert('Każdy kolor może mieć tylko dwie kropki.');
             return;
@@ -117,13 +130,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         dots.push({ row, col, color });
-        cell.style.backgroundColor = color;
+
+        // Usuń istniejące koło, jeśli jest
+        const existingDot = cell.querySelector('.dot');
+        if (existingDot) {
+            existingDot.remove();
+        }
+
+        // Dodaj nowe koło
+        const dotElement = document.createElement('div');
+        dotElement.classList.add('dot');
+        dotElement.style.backgroundColor = color;
+        dotElement.style.width = '50%'; // Rozmiar koła jako procent wielkości kwadratu
+        dotElement.style.height = '50%';
+        dotElement.style.borderRadius = '50%'; // Sprawia, że element jest okrągły
+        dotElement.style.position = 'absolute';
+        dotElement.style.top = '25%'; // Wyśrodkowanie w pionie
+        dotElement.style.left = '25%'; // Wyśrodkowanie w poziomie
+        cell.appendChild(dotElement);
+
         dotsInput.value = JSON.stringify(dots);
     };
 
     const removeDot = (cell: HTMLElement, row: number, col: number) => {
         dots = dots.filter(dot => !(dot.row === row && dot.col === col));
         cell.style.backgroundColor = '';
+        const existingDot = cell.querySelector('.dot');
+        if (existingDot) {
+            existingDot.remove();
+        }
         dotsInput.value = JSON.stringify(dots);
     };
 
