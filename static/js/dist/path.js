@@ -48,14 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Invalid move: Point already exists in the path.');
             return; // Nie dodawaj punktu, jeśli już istnieje w ścieżce
         }
-        // Oblicz współrzędne kliknięcia w canvasie
-        const rect = gridContainer.getBoundingClientRect();
-        const cellWidth = rect.width / cols;
-        const cellHeight = rect.height / rows;
-        const x = col * cellWidth + cellWidth / 2 + rect.left; // Współrzędna X na ekranie
-        const y = (row + 1) * cellHeight + cellHeight / 2 + rect.height; // Współrzędna Y na ekranie
-        // Wyświetl tymczasowe kółko w miejscu kliknięcia
-        showTemporaryFeedback(x, y, '#2563EB');
         // Sprawdź, czy kliknięto na kropkę w innym kolorze
         if (isDot && currentPathColor && dotColor !== currentPathColor) {
             console.log('Invalid move: Dot color does not match the current path color.');
@@ -303,8 +295,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Sprawdź, czy kliknięto na canvas
         if (target === pathCanvas) {
             const rect = pathCanvas.getBoundingClientRect();
-            const clickX = event.clientX - rect.left; // Współrzędna X kliknięcia w canvasie
-            const clickY = event.clientY - rect.top; // Współrzędna Y kliknięcia w canvasie
+            const gridRect = gridContainer.getBoundingClientRect();
+            const clickX = event.clientX - gridRect.left; // Współrzędna X kliknięcia w canvasie
+            const clickY = event.clientY - gridRect.top; // Współrzędna Y kliknięcia w canvasie
             console.log('Click coordinates on canvas:', { clickX, clickY });
             // Przelicz współrzędne kliknięcia na wiersz i kolumnę siatki
             const cellWidth = rect.width / cols; // Szerokość jednej komórki
