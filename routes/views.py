@@ -27,9 +27,15 @@ def register(request):
 
 @login_required
 def route_list(request):
-    boards = GameBoard.objects.filter(user=request.user)
-    routes = Route.objects.filter(user=request.user)
-    return render(request, 'routes/route_list.html', {'boards': boards, 'routes': routes})
+    paths = Path.objects.filter(user=request.user)  # Pobierz ścieżki użytkownika
+    boards = GameBoard.objects.filter(user=request.user)  # Pobierz plansze użytkownika
+    routes = Route.objects.filter(user=request.user)  # Pobierz trasy użytkownika
+
+    return render(request, 'routes/route_list.html', {
+        'paths': paths,
+        'boards': boards,
+        'routes': routes,
+    })
 
 @login_required
 def create_route(request):
@@ -136,30 +142,51 @@ def index(request):
 def save_path(request, board_id):
     if request.method == 'POST':
         data = json.loads(request.body)
+        path_id = data.get('path_id')
+        path_name = data.get('path_name', 'Unnamed Path')  # Pobierz nazwę ścieżki
         path_data = data.get('path_data', [])
 
         if not path_data:
             return JsonResponse({'message': 'Nieprawidłowe dane.'}, status=400)
 
         board = get_object_or_404(GameBoard, id=board_id)
-        path, created = Path.objects.update_or_create(
-            user=request.user,
-            board=board,
-            defaults={'path_data': path_data}
-        )
 
-        return JsonResponse({'message': 'Ścieżka została zapisana.'})
+        if path_id:
+            # Aktualizuj istniejącą ścieżkę
+            path = get_object_or_404(Path, id=path_id, user=request.user, board=board)
+            path.name = path_name  # Zaktualizuj nazwę ścieżki
+            path.path_data = path_data
+            path.save()
+        else:
+            # Utwórz nową ścieżkę
+            path = Path.objects.create(
+                user=request.user,
+                board=board,
+                name=path_name,  # Ustaw nazwę ścieżki
+                path_data=path_data
+            )
+
+        return JsonResponse({'message': 'Ścieżka została zapisana.', 'path_id': path.id})
 
 @login_required
 def load_path(request, board_id):
     board = get_object_or_404(GameBoard, id=board_id)
-    path = Path.objects.filter(board=board, user=request.user).first()
+    paths = Path.objects.filter(board=board, user=request.user)
+
+    paths_data = [
+        {
+            'id': path.id,
+            'name': path.name,
+            'path_data': path.path_data,
+        }
+        for path in paths
+    ]
 
     return JsonResponse({
         'rows': board.rows,
         'cols': board.cols,
         'dots': board.dots,
-        'path_data': path.path_data if path else []
+        'paths': paths_data,
     })
 
 @login_required

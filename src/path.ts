@@ -11,7 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let cols = 0;
     let currentPathColor: string | null = null;
     let pathColor: string | null = null; // Kolor aktualnej ścieżki
-    let isPathComplete = false; // Flaga wskazująca, czy ścieżka została zakończona
+    let isPathComplete = path.length > 0; // Ustaw flagę zakończenia ścieżki
+    if (path.length > 0) {
+        let first = path[0]; // Ustaw pierwszy punkt ścieżki
+        pathColor = dots.find(dot => dot.row === first.row && dot.col === first.col)?.color || null; // Ustaw kolor ścieżki na kolor pierwszej kropki
+        currentPathColor = pathColor; // Ustaw kolor aktualnej ścieżki na kolor pierwszej kropki
+        console.log('Path color set to:', pathColor);
+    }
+
 
     const ctx = pathCanvas.getContext('2d')!;
 
@@ -167,13 +174,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Funkcja do rysowania ścieżki na canvasie
     const drawPath = () => {
-        const rect = pathCanvas.getBoundingClientRect();
+        console.log('Drawing path with current path color:', pathColor);
+        const rect = gridContainer.getBoundingClientRect();
+        console.log('Canvas bounding rect:', rect);
+        console.log('Canvas size:', { width: rect.width, height: rect.height });
         const cellWidth = rect.width / cols;  // Szerokość jednej komórki
         const cellHeight = rect.height / rows; // Wysokość jednej komórki
         const pointRadius = Math.min(cellWidth, cellHeight) * 0.1; // Promień punktu (25% wielkości komórki)
         const lineWidth = pointRadius * 2; // Grubość linii
 
-        ctx.clearRect(0, 0, pathCanvas.width, pathCanvas.height); // Wyczyść canvas
+        ctx.clearRect(0, 0, rect.width, rect.height); // Wyczyść canvas
         ctx.beginPath();
 
         path.forEach(({ row, col }, index) => {
@@ -186,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.lineTo(x, y);
             }
 
+            console.log('Drawing point at:', { x, y });
             ctx.arc(x, y, pointRadius, 0, 2 * Math.PI); // Rysuj okrąg
             ctx.fillStyle = pathColor || '#2563EB'; // Kolor punktu
         });
@@ -204,13 +215,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (response.ok) {
             const data = await response.json();
             console.log('Response data:', data); // Loguj całą odpowiedź serwera
+
+            // Załaduj dane planszy
             dots = data.dots || [];
-            path = data.path_data || [];
             rows = data.rows; // Przypisz liczbę wierszy
             cols = data.cols; // Przypisz liczbę kolumn
             generateGrid(rows, cols);
+
+            // Załaduj wszystkie ścieżki
+            const pathId = parseInt((document.getElementById('path-id') as HTMLInputElement).value);
+            const existingPath = data.paths.find((pathData: any) => pathData.id === pathId);
+
+            if (existingPath) {
+                path = existingPath.path_data || []; // Załaduj istniejące punkty ścieżki
+                pathColor = dots.find(dot => dot.row === path[0]?.row && dot.col === path[0]?.col)?.color || null;
+                console.log('Loaded existing path:', path);
+                isPathComplete = path.length > 0; // Ustaw flagę zakończenia ścieżki
+            } else {
+                console.log('No existing path found for this ID.');
+            }
+
+            resizeCanvas(); // Dopasuj rozmiar canvasu po załadowaniu danych
             drawPath();
-            resizeCanvas(); // Wywołaj dopasowanie canvasu po załadowaniu danych
             console.log('Dane załadowane. Grid generated with rows:', rows, 'cols:', cols);
         } else {
             alert('Błąd podczas ładowania danych planszy.');
@@ -230,13 +256,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Obsługa zapisu ścieżki
     savePathButton.addEventListener('click', async () => {
+        const pathId = (document.getElementById('path-id') as HTMLInputElement).value;
+        const pathName = (document.getElementById('path-name') as HTMLInputElement).value; // Pobierz nazwę ścieżki
+
         const response = await fetch(`/routes/${boardId}/save_path/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') as HTMLInputElement).value,
             },
-            body: JSON.stringify({ path_data: path }),
+            body: JSON.stringify({ path_id: pathId, path_name: pathName, path_data: path }),
         });
 
         if (response.ok) {

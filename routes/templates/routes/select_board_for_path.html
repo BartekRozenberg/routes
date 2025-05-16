@@ -25,6 +25,13 @@
                 <p class="text-center text-gray-600 mb-6">Nie znaleziono plansz.</p>
                 {% endfor %}
             </div>
+            <!-- Przycisk Anuluj -->
+            <div class="flex justify-end mt-6">
+                <a href="{% url 'route_list' %}"
+                   class="text-gray-600 hover:text-gray-800 font-medium">
+                    Anuluj
+                </a>
+            </div>
         </form>
     </div>
 </div>

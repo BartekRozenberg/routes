@@ -3,9 +3,24 @@
 {% block content %}
 <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="container max-w-2xl bg-white shadow-md rounded-lg p-6">
+        <!-- Przycisk powrotu -->
+        <div class="mb-4">
+            <a href="{% url 'route_list' %}" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg">
+                Powrót do listy ścieżek
+            </a>
+        </div>
+
         <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">
             Edytuj Ścieżkę: {{ path_name }}
         </h1>
+
+        <!-- Pole do edycji nazwy ścieżki -->
+        <div class="mb-4">
+            <label for="path-name" class="block text-sm font-medium text-gray-700 mb-1">Nazwa Ścieżki</label>
+            <input type="text" id="path-name" value="{{ path_name }}" placeholder="Podaj nazwę ścieżki"
+                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
         <!-- Kontener dla planszy -->
         <div id="board-container" class="relative mt-4 border rounded-lg p-4 overflow-hidden">
             <!-- Plansza z kropkami -->
@@ -14,6 +29,7 @@
             <canvas id="path-canvas" class="absolute inset-0"></canvas>
         </div>
         <input type="hidden" id="board-id" value="{{ board.id }}">
+        <input type="hidden" id="path-id" value="{{ path.id }}">
         <button id="save-path-button" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg mt-6">
             Zapisz Ścieżkę
         </button>

@@ -10,7 +10,7 @@
             <div class="border border-gray-300 rounded-lg p-4 hover:shadow-md">
                 <div class="flex justify-between items-center">
                     <a href="{% url 'edit_path' path.id %}" class="text-lg font-semibold text-emerald-500 hover:underline">
-                        Ścieżka na planszy: {{ path.board.name }}
+                        Ścieżka: {{ path.name }}
                     </a>
                     <form method="post" action="{% url 'delete_path' path.id %}">
                         {% csrf_token %}

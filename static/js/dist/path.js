@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 document.addEventListener('DOMContentLoaded', () => {
+    var _a;
     console.log('DOMContentLoaded event fired');
     const gridContainer = document.getElementById('grid-container');
     const pathCanvas = document.getElementById('path-canvas');
@@ -19,7 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let cols = 0;
     let currentPathColor = null;
     let pathColor = null; // Kolor aktualnej ścieżki
-    let isPathComplete = false; // Flaga wskazująca, czy ścieżka została zakończona
+    let isPathComplete = path.length > 0; // Ustaw flagę zakończenia ścieżki
+    if (path.length > 0) {
+        let first = path[0]; // Ustaw pierwszy punkt ścieżki
+        pathColor = ((_a = dots.find(dot => dot.row === first.row && dot.col === first.col)) === null || _a === void 0 ? void 0 : _a.color) || null; // Ustaw kolor ścieżki na kolor pierwszej kropki
+        currentPathColor = pathColor; // Ustaw kolor aktualnej ścieżki na kolor pierwszej kropki
+        console.log('Path color set to:', pathColor);
+    }
     const ctx = pathCanvas.getContext('2d');
     console.log('Grid container element:', gridContainer);
     /**
@@ -160,12 +167,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // Funkcja do rysowania ścieżki na canvasie
     const drawPath = () => {
-        const rect = pathCanvas.getBoundingClientRect();
+        console.log('Drawing path with current path color:', pathColor);
+        const rect = gridContainer.getBoundingClientRect();
+        console.log('Canvas bounding rect:', rect);
+        console.log('Canvas size:', { width: rect.width, height: rect.height });
         const cellWidth = rect.width / cols; // Szerokość jednej komórki
         const cellHeight = rect.height / rows; // Wysokość jednej komórki
         const pointRadius = Math.min(cellWidth, cellHeight) * 0.1; // Promień punktu (25% wielkości komórki)
         const lineWidth = pointRadius * 2; // Grubość linii
-        ctx.clearRect(0, 0, pathCanvas.width, pathCanvas.height); // Wyczyść canvas
+        ctx.clearRect(0, 0, rect.width, rect.height); // Wyczyść canvas
         ctx.beginPath();
         path.forEach(({ row, col }, index) => {
             const x = lineWidth + col * cellWidth + cellWidth / 2; // Środek komórki w osi X
@@ -176,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else {
                 ctx.lineTo(x, y);
             }
+            console.log('Drawing point at:', { x, y });
             ctx.arc(x, y, pointRadius, 0, 2 * Math.PI); // Rysuj okrąg
             ctx.fillStyle = pathColor || '#2563EB'; // Kolor punktu
         });
@@ -187,18 +198,31 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // Pobierz dane planszy i kropki z serwera
     const loadBoardData = () => __awaiter(this, void 0, void 0, function* () {
+        var _a;
         const response = yield fetch(`/routes/${boardId}/load_path/`);
         console.log('Response status:', response.status);
         if (response.ok) {
             const data = yield response.json();
             console.log('Response data:', data); // Loguj całą odpowiedź serwera
+            // Załaduj dane planszy
             dots = data.dots || [];
-            path = data.path_data || [];
             rows = data.rows; // Przypisz liczbę wierszy
             cols = data.cols; // Przypisz liczbę kolumn
             generateGrid(rows, cols);
+            // Załaduj wszystkie ścieżki
+            const pathId = parseInt(document.getElementById('path-id').value);
+            const existingPath = data.paths.find((pathData) => pathData.id === pathId);
+            if (existingPath) {
+                path = existingPath.path_data || []; // Załaduj istniejące punkty ścieżki
+                pathColor = ((_a = dots.find(dot => { var _a, _b; return dot.row === ((_a = path[0]) === null || _a === void 0 ? void 0 : _a.row) && dot.col === ((_b = path[0]) === null || _b === void 0 ? void 0 : _b.col); })) === null || _a === void 0 ? void 0 : _a.color) || null;
+                console.log('Loaded existing path:', path);
+                isPathComplete = path.length > 0; // Ustaw flagę zakończenia ścieżki
+            }
+            else {
+                console.log('No existing path found for this ID.');
+            }
+            resizeCanvas(); // Dopasuj rozmiar canvasu po załadowaniu danych
             drawPath();
-            resizeCanvas(); // Wywołaj dopasowanie canvasu po załadowaniu danych
             console.log('Dane załadowane. Grid generated with rows:', rows, 'cols:', cols);
         }
         else {
@@ -216,13 +240,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // Obsługa zapisu ścieżki
     savePathButton.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
+        const pathId = document.getElementById('path-id').value;
+        const pathName = document.getElementById('path-name').value; // Pobierz nazwę ścieżki
         const response = yield fetch(`/routes/${boardId}/save_path/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
             },
-            body: JSON.stringify({ path_data: path }),
+            body: JSON.stringify({ path_id: pathId, path_name: pathName, path_data: path }),
         });
         if (response.ok) {
             alert('Ścieżka została zapisana!');
