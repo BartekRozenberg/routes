@@ -3,7 +3,49 @@
 {% block content %}
 <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="container max-w-2xl bg-white shadow-md rounded-lg p-6">
-        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Twoje Plansze</h1>
+        <!-- Lista ścieżek -->
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Twoje Ścieżki</h1>
+        <div class="space-y-4">
+            {% for path in paths %}
+            <div class="border border-gray-300 rounded-lg p-4 hover:shadow-md">
+                <div class="flex justify-between items-center">
+                    <a href="{% url 'edit_path' path.id %}" class="text-lg font-semibold text-emerald-500 hover:underline">
+                        Ścieżka na planszy: {{ path.board.name }}
+                    </a>
+                    <form method="post" action="{% url 'delete_path' path.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium">
+                            Usuń ścieżkę
+                        </button>
+                    </form>
+                </div>
+                <p class="text-sm text-gray-600">
+                    Utworzono: {{ path.created_at|date:"M d, Y H:i" }}
+                </p>
+            </div>
+            {% empty %}
+            <div class="text-center">
+                <a href="{% url 'select_board_for_path' %}" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg">
+                    Rysuj swoją pierwszą ścieżkę!
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Przycisk dodaj kolejne ścieżki -->
+        {% if paths %}
+        <div class="text-center mt-6">
+            <a href="{% url 'select_board_for_path' %}" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg">
+                Dodaj kolejne ścieżki
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Przerwa między listą ścieżek a listą plansz -->
+        <div class="mt-20"></div>
+
+        <!-- Lista plansz -->
+        <h1 class="text-2xl font-bold text-center text-gray-800 mt-12 mb-6">Twoje Plansze</h1>
         <button class="text-center mb-6">
             <a href="{% url 'create_or_edit_board' %}" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg">
                 Utwórz Nową Planszę
@@ -13,7 +55,7 @@
             {% for board in boards %}
             <div class="border border-gray-300 rounded-lg p-4 hover:shadow-md">
                 <div class="flex justify-between items-center">
-                    <a href="{% url 'edit_board' board.id %}" class="text-lg font-semibold text-blue-500 hover:underline">
+                    <a href="{% url 'edit_board' board.id %}" class="text-lg font-semibold text-emerald-500 hover:underline">
                         {{ board.name|default:"Unnamed Board" }}
                     </a>
                     <form method="post" action="{% url 'delete_board' board.id %}">
@@ -32,6 +74,10 @@
             {% endfor %}
         </div>
 
+        <!-- Przerwa między listą plansz a listą tras -->
+        <div class="mt-20"></div>
+
+        <!-- Lista tras -->
         <h1 class="text-2xl font-bold text-center text-gray-800 mt-12 mb-6">Twoje Trasy</h1>
         <button class="text-center mb-6">
             <a href="{% url 'create_route' %}" class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg">

@@ -41,3 +41,13 @@ class GameBoard(models.Model):
 
     def __str__(self):
         return self.name
+
+class Path(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    board = models.ForeignKey(GameBoard, on_delete=models.CASCADE, related_name='paths')
+    name = models.CharField(max_length=100, default="Unnamed Path")  # Dodano pole nazwy
+    path_data = models.JSONField(default=list)  # Przechowuje ścieżkę jako listę współrzędnych
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Path '{self.name}' for {self.board.name} by {self.user.username}"

@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .forms import RouteForm, PointForm
-from .models import Route, Point, GameBoard
+from .models import Route, Point, GameBoard, Path
 from django.contrib.auth.decorators import login_required
 from routes.models import Route, Point
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Max
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 # Logowanie:
 def register(request):
@@ -74,7 +76,6 @@ def delete_point(request, route_id, point_id):
 @login_required
 def create_or_edit_board(request, board_id=None):
     if request.method == 'POST' and request.content_type == 'application/json':
-        import json
         data = json.loads(request.body)
 
         name = data.get('name')
@@ -129,3 +130,62 @@ def delete_route(request, route_id):
 @login_required
 def index(request):
     return render(request, 'routes/index.html')
+
+@login_required
+@csrf_exempt
+def save_path(request, board_id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        path_data = data.get('path_data', [])
+
+        if not path_data:
+            return JsonResponse({'message': 'Nieprawidłowe dane.'}, status=400)
+
+        board = get_object_or_404(GameBoard, id=board_id)
+        path, created = Path.objects.update_or_create(
+            user=request.user,
+            board=board,
+            defaults={'path_data': path_data}
+        )
+
+        return JsonResponse({'message': 'Ścieżka została zapisana.'})
+
+@login_required
+def load_path(request, board_id):
+    board = get_object_or_404(GameBoard, id=board_id)
+    path = Path.objects.filter(board=board, user=request.user).first()
+
+    return JsonResponse({
+        'rows': board.rows,
+        'cols': board.cols,
+        'dots': board.dots,
+        'path_data': path.path_data if path else []
+    })
+
+@login_required
+def select_board_for_path(request):
+    boards = GameBoard.objects.all()  # Wyświetl wszystkie plansze
+    return render(request, 'routes/select_board_for_path.html', {'boards': boards})
+
+@login_required
+def edit_path(request, path_id=None):
+    if path_id:
+        # Pobierz istniejącą ścieżkę lub zwróć 404, jeśli użytkownik nie ma dostępu
+        path = get_object_or_404(Path, id=path_id, user=request.user)
+    else:
+        # Jeśli `path_id` nie jest podane, utwórz nową ścieżkę
+        board_id = request.GET.get('board_id')  # Pobierz `board_id` z parametrów GET
+        board = get_object_or_404(GameBoard, id=board_id)
+        name = request.GET.get('name', 'Unnamed Path')  # Pobierz nazwę z parametrów GET
+        path = Path.objects.create(user=request.user, board=board, name=name, path_data=[])
+
+    board = path.board
+    return render(request, 'routes/edit_path.html', {'board': board, 'path': path, 'path_name': path.name})
+
+@login_required
+def delete_path(request, path_id):
+    path = get_object_or_404(Path, id=path_id, user=request.user)
+    if request.method == 'POST':
+        path.delete()
+        messages.success(request, 'Ścieżka została usunięta.')
+    return redirect('route_list')

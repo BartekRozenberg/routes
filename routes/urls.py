@@ -31,4 +31,10 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('accounts/register/', views.register, name='register'),
+    path('routes/<int:board_id>/save_path/', views.save_path, name='save_path'),
+    path('routes/<int:board_id>/load_path/', views.load_path, name='load_path'),
+    path('routes/select_board_for_path/', views.select_board_for_path, name='select_board_for_path'),
+    path('routes/edit_path/', views.edit_path, name='edit_path'),  # Obsługuje nową ścieżkę
+    path('routes/edit_path/<int:path_id>/', views.edit_path, name='edit_path'),  # Obsługuje istniejącą ścieżkę
+    path('routes/delete_path/<int:path_id>/', views.delete_path, name='delete_path'),
 ]
