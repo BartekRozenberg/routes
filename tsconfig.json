@@ -3,7 +3,11 @@
     "target": "ES6", // Wersja docelowa JavaScript
     "module": "ES6", // System modułów
     "outDir": "./static/js/dist/", // Katalog wyjściowy dla skompilowanych plików
-    "sourceMap": true // Włączenie map źródłowych dla debugowania
+    "sourceMap": true, // Włączenie map źródłowych dla debugowania
+    "lib": [
+      "dom",
+      "es2017"
+    ]
   },
   "include": ["src/**/*"], // Katalog z plikami TypeScript
   "exclude": ["node_modules"] // Wykluczenie katalogu node_modules

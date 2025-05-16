@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const cellWidth = rect.width / cols;
         const cellHeight = rect.height / rows;
         const x = col * cellWidth + cellWidth / 2 + rect.left; // Współrzędna X na ekranie
-        const y = row * cellHeight + cellHeight / 2 + rect.height + cellHeight / 8; // Współrzędna Y na ekranie
+        const y = (row + 1) * cellHeight + cellHeight / 2 + rect.height; // Współrzędna Y na ekranie
         // Wyświetl tymczasowe kółko w miejscu kliknięcia
         showTemporaryFeedback(x, y, '#2563EB');
         // Sprawdź, czy kliknięto na kropkę w innym kolorze
@@ -117,6 +117,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         // Narysuj zaktualizowaną ścieżkę
+        drawPath();
+    };
+    const removeLastPoint = () => {
+        if (path.length === 0) {
+            console.log('No points to remove.');
+            return; // Nie ma punktów do usunięcia
+        }
+        const lastPoint = path[path.length - 1];
+        console.log('Removing last point:', lastPoint);
+        // Usuń ostatni punkt
+        path.pop();
+        // Jeśli ścieżka jest pusta, zresetuj kolor ścieżki i oznacz ją jako edytowalną
+        if (path.length === 0) {
+            currentPathColor = null;
+            pathColor = null;
+            isPathComplete = false;
+            console.log('Path is now empty and editable.');
+        }
+        else {
+            // Jeśli ścieżka nadal istnieje, oznacz ją jako edytowalną
+            currentPathColor = pathColor; // Ustaw kolor ścieżki na kolor ostatniego punktu
+            isPathComplete = false;
+            console.log('Path is now editable.');
+        }
+        // Narysuj zaktualizowaną ścieżkę
+        resizeCanvas(); // Dopasuj rozmiar canvasu
         drawPath();
     };
     // Funkcja do generowania planszy z kropkami
@@ -248,6 +274,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // Obsługa zapisu ścieżki
     savePathButton.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
+        // Sprawdź, czy ścieżka jest zakończona
+        if (!isPathComplete) {
+            alert('Nie można zapisać ścieżki, ponieważ nie jest zakończona. Upewnij się, że ścieżka kończy się w kropce.');
+            return; // Zablokuj zapis
+        }
         const pathId = document.getElementById('path-id').value;
         const pathName = document.getElementById('path-name').value; // Pobierz nazwę ścieżki
         const response = yield fetch(`/routes/${boardId}/save_path/`, {
@@ -269,11 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (event) => {
         console.log('Document clicked:', event);
         const target = event.target;
-        // Sprawdź, czy kliknięto na element wewnątrz `grid-container`
-        const cell = target.closest('[data-row][data-col]');
-        if (cell) {
-            console.log('Cell clicked:', cell);
-        }
         // Sprawdź, czy kliknięto na canvas
         if (target === pathCanvas) {
             const rect = pathCanvas.getBoundingClientRect();
@@ -286,6 +312,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const col = Math.floor(clickX / cellWidth); // Kolumna siatki
             const row = Math.floor(clickY / cellHeight); // Wiersz siatki
             console.log('Grid coordinates:', { row, col });
+            // Sprawdź, czy kliknięto na ostatni punkt ścieżki
+            const lastPoint = path[path.length - 1];
+            if (lastPoint && lastPoint.row === row && lastPoint.col === col) {
+                console.log('Clicked on the last point of the path.');
+                removeLastPoint();
+                return;
+            }
             // Sprawdź, czy kliknięto na kropkę
             const dot = dots.find(dot => dot.row === row && dot.col === col);
             if (dot) {

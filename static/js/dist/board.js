@@ -169,6 +169,17 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Upewnij się, że nazwa, liczba wierszy i kolumn są poprawnie wypełnione.');
             return;
         }
+        // Walidacja liczby kropek każdego koloru
+        const colorCounts = {};
+        dots.forEach(dot => {
+            colorCounts[dot.color] = (colorCounts[dot.color] || 0) + 1;
+        });
+        const invalidColors = Object.entries(colorCounts).filter(([color, count]) => (count !== 2 && count !== 0));
+        if (invalidColors.length > 0) {
+            alert('Każdy kolor musi mieć dokładnie dwie kropki. Sprawdź kolory: ' +
+                invalidColors.map(([color]) => color).join(', '));
+            return;
+        }
         try {
             const boardId = boardIdInput.value; // Pobierz wartość board_id
             const endpoint = boardId ? `/routes/edit_board/${boardId}/` : '/routes/create_board/';

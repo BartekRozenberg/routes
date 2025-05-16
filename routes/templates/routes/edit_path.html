@@ -3,6 +3,11 @@
 {% block content %}
 <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="container max-w-2xl bg-white shadow-md rounded-lg p-6">
+        <!-- Informacyjny napis -->
+        <div class="mb-4 text-center text-gray-700">
+            <p>Zacznij od kliknięcia na kropkę. Musisz skończyć trasę w kropce. Kliknięcie na ostatni dodany punkt usuwa go.</p>
+        </div>
+
         <!-- Przycisk powrotu -->
         <div class="mb-4">
             <a href="{% url 'route_list' %}" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg">
