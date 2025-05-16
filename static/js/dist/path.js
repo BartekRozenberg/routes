@@ -48,6 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Invalid move: Point already exists in the path.');
             return; // Nie dodawaj punktu, jeśli już istnieje w ścieżce
         }
+        // Oblicz współrzędne kliknięcia w canvasie
+        const rect = gridContainer.getBoundingClientRect();
+        const cellWidth = rect.width / cols;
+        const cellHeight = rect.height / rows;
+        const x = col * cellWidth + cellWidth / 2 + rect.left; // Współrzędna X na ekranie
+        const y = row * cellHeight + cellHeight / 2 + rect.height + cellHeight / 8; // Współrzędna Y na ekranie
+        // Wyświetl tymczasowe kółko w miejscu kliknięcia
+        showTemporaryFeedback(x, y, '#2563EB');
         // Sprawdź, czy kliknięto na kropkę w innym kolorze
         if (isDot && currentPathColor && dotColor !== currentPathColor) {
             console.log('Invalid move: Dot color does not match the current path color.');
@@ -288,6 +296,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+    const showTemporaryFeedback = (x, y, color) => {
+        const feedback = document.createElement('div');
+        feedback.style.position = 'absolute';
+        feedback.style.width = '20px'; // Rozmiar kółka
+        feedback.style.height = '20px';
+        feedback.style.backgroundColor = color;
+        feedback.style.borderRadius = '50%';
+        feedback.style.left = `${x - 10}px`; // Wyśrodkowanie kółka
+        feedback.style.top = `${y - 10}px`;
+        feedback.style.pointerEvents = 'none';
+        feedback.style.zIndex = '1000';
+        feedback.style.transition = 'opacity 0.5s ease'; // Płynne zanikanie
+        feedback.style.opacity = '1';
+        document.body.appendChild(feedback);
+        // Usuń kółko po krótkim czasie
+        setTimeout(() => {
+            feedback.style.opacity = '0'; // Zmień przezroczystość na 0
+            setTimeout(() => feedback.remove(), 500); // Usuń element po zakończeniu animacji
+        }, 500);
+    };
     // Inicjalizacja
     console.log('Initializing path drawing...');
     resizeCanvas();
