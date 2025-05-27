@@ -152,19 +152,18 @@ def save_path(request, board_id):
         board = get_object_or_404(GameBoard, id=board_id)
 
         if path_id:
-            # Aktualizuj istniejącą ścieżkę
             path = get_object_or_404(Path, id=path_id, user=request.user, board=board)
-            path.name = path_name  # Zaktualizuj nazwę ścieżki
+            path.name = path_name
             path.path_data = path_data
-            path.save()
+            path.save()  # Wywołaj save(), aby uruchomić sygnał post_save
         else:
-            # Utwórz nową ścieżkę
             path = Path.objects.create(
                 user=request.user,
                 board=board,
-                name=path_name,  # Ustaw nazwę ścieżki
+                name=path_name,
                 path_data=path_data
             )
+            print(f"Path created: {path.id}")  # Dodaj logowanie
 
         return JsonResponse({'message': 'Ścieżka została zapisana.', 'path_id': path.id})
 
@@ -216,3 +215,29 @@ def delete_path(request, path_id):
         path.delete()
         messages.success(request, 'Ścieżka została usunięta.')
     return redirect('route_list')
+
+
+## Lab 11 - zadanie 5
+
+from django.http import StreamingHttpResponse
+import time
+import json
+
+# Lista zdarzeń do wysłania
+event_queue = []
+
+def sse_notifications(request):
+    def event_stream():
+        while True:
+            if event_queue:
+                print(f"Event queue: {event_queue}")  # Logowanie zawartości kolejki
+                event = event_queue.pop(0)
+                print(f"Sending event: {event}")  # Logowanie wysyłanego zdarzenia
+                yield f"event: {event['type']}\ndata: {json.dumps(event['data'])}\n\n"
+            else:
+                yield ": keep-alive\n\n"
+            time.sleep(2)
+
+    response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+    response['Cache-Control'] = 'no-cache'
+    return response

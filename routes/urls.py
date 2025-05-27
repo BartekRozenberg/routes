@@ -37,4 +37,5 @@ urlpatterns = [
     path('routes/edit_path/', views.edit_path, name='edit_path'),  # Obsługuje nową ścieżkę
     path('routes/edit_path/<int:path_id>/', views.edit_path, name='edit_path'),  # Obsługuje istniejącą ścieżkę
     path('routes/delete_path/<int:path_id>/', views.delete_path, name='delete_path'),
+    path('sse/notifications/', views.sse_notifications, name='sse_notifications'),
 ]

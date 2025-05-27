@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Canvas size:', { width: rect.width, height: rect.height });
         const cellWidth = rect.width / cols; // Szerokość jednej komórki
         const cellHeight = rect.height / rows; // Wysokość jednej komórki
-        const pointRadius = Math.min(cellWidth, cellHeight) * 0.1; // Promień punktu (25% wielkości komórki)
+        const pointRadius = Math.min(cellWidth, cellHeight) * 0.1; // Promień punktu (10% wielkości komórki)
         const lineWidth = pointRadius * 2; // Grubość linii
         ctx.clearRect(0, 0, rect.width, rect.height); // Wyczyść canvas
         ctx.beginPath();
