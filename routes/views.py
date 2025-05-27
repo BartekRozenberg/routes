@@ -6,10 +6,15 @@ from django.contrib.auth.decorators import login_required
 from routes.models import Route, Point
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Max
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, StreamingHttpResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 import json
+import time
+import redis
+
+# Połącz się z Redis
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 # Logowanie:
 def register(request):
@@ -219,23 +224,15 @@ def delete_path(request, path_id):
 
 ## Lab 11 - zadanie 5
 
-from django.http import StreamingHttpResponse
-import time
-import json
-
-# Lista zdarzeń do wysłania
-event_queue = []
-
 def sse_notifications(request):
     def event_stream():
-        while True:
-            if event_queue:
-                print(f"Event queue: {event_queue}")  # Logowanie zawartości kolejki
-                event = event_queue.pop(0)
+        pubsub = redis_client.pubsub()
+        pubsub.subscribe('notifications')  # Subskrybuj kanał Redis
+        for message in pubsub.listen():
+            if message['type'] == 'message':
+                event = json.loads(message['data'])
                 print(f"Sending event: {event}")  # Logowanie wysyłanego zdarzenia
                 yield f"event: {event['type']}\ndata: {json.dumps(event['data'])}\n\n"
-            else:
-                yield ": keep-alive\n\n"
             time.sleep(2)
 
     response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")

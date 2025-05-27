@@ -1,25 +1,29 @@
+import redis
+import json
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import GameBoard, Path
-from .views import event_queue  # Importuj event_queue z views.py
+
+# Połącz się z Redis
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 @receiver(post_save, sender=GameBoard)
 def notify_new_board(sender, instance, created, **kwargs):
     if created:
-        event_queue.append({
+        event = {
             "type": "newBoard",
             "data": {
                 "board_id": instance.id,
                 "board_name": instance.name,
                 "creator_username": instance.user.username
             }
-        })
+        }
+        redis_client.publish('notifications', json.dumps(event))  # Publikuj zdarzenie w Redis
 
 @receiver(post_save, sender=Path)
 def notify_new_path(sender, instance, created, **kwargs):
     if created:
-        print(f"New path created: {instance.id}, board: {instance.board.id}")
-        event_queue.append({
+        event = {
             "type": "newPath",
             "data": {
                 "path_id": instance.id,
@@ -27,4 +31,5 @@ def notify_new_path(sender, instance, created, **kwargs):
                 "board_name": instance.board.name,
                 "user_username": instance.user.username
             }
-        })
+        }
+        redis_client.publish('notifications', json.dumps(event))  # Publikuj zdarzenie w Redis
