@@ -16,6 +16,17 @@
                 <a href="{% url 'index' %}" class="hover:text-emerald-300 ml-8">Route Editor</a>
             </h1>
             <nav class="flex items-center space-x-4">
+                <!-- Powiadomienia -->
+                <div id="notification-section" class="relative">
+                    <button id="notification-button" class="font-semibold py-2 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700">
+                        Powiadomienia
+                    </button>
+                    <div id="notification-list" class="absolute right-0 mt-2 w-64 bg-white text-gray-800 shadow-lg rounded-lg hidden">
+                        <ul class="divide-y divide-gray-200">
+                            <!-- Powiadomienia będą dodawane dynamicznie -->
+                        </ul>
+                    </div>
+                </div>
                 {% if user.is_authenticated %}
                     <a href="/admin/" class="font-semibold py-2 px-4 rounded-lg">
                         Panel Admina

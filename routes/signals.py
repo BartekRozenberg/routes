@@ -32,4 +32,5 @@ def notify_new_path(sender, instance, created, **kwargs):
                 "user_username": instance.user.username
             }
         }
+        print(f"Publishing newPath event to Redis: {event}")  # Logowanie zdarzenia
         redis_client.publish('notifications', json.dumps(event))  # Publikuj zdarzenie w Redis

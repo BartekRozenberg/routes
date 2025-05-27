@@ -13,11 +13,44 @@ const showNotification = (message, isError = false) => {
         notification.style.opacity = '0';
         setTimeout(() => notification.remove(), 500);
     }, 5000);
+    // Zapisz powiadomienie w sessionStorage
+    saveNotificationToSession(message, isError);
 };
+// Funkcja do zapisania powiadomienia w sessionStorage
+const saveNotificationToSession = (message, isError) => {
+    const notifications = JSON.parse(sessionStorage.getItem('notifications') || '[]');
+    notifications.push({ message, isError });
+    sessionStorage.setItem('notifications', JSON.stringify(notifications));
+    updateNotificationList();
+};
+// Funkcja do wyświetlenia powiadomień w dedykowanej sekcji
+const updateNotificationList = () => {
+    const notifications = JSON.parse(sessionStorage.getItem('notifications') || '[]');
+    const notificationList = document.querySelector('#notification-list ul');
+    if (notificationList) {
+        notificationList.innerHTML = ''; // Wyczyść listę
+        notifications.forEach((notification) => {
+            const li = document.createElement('li');
+            li.classList.add('py-2', 'px-4', 'hover:bg-gray-100', 'cursor-pointer');
+            li.textContent = notification.message;
+            notificationList.appendChild(li);
+        });
+    }
+};
+// Obsługa przycisku powiadomień
 document.addEventListener('DOMContentLoaded', () => {
+    const notificationButton = document.getElementById('notification-button');
+    const notificationList = document.getElementById('notification-list');
+    if (notificationButton && notificationList) {
+        notificationButton.addEventListener('click', () => {
+            notificationList.classList.toggle('hidden'); // Pokaż/ukryj listę powiadomień
+        });
+    }
     console.log('Initializing SSE connection...');
     const eventSource = new EventSource('/sse/notifications/');
     let isConnectionOpen = false; // Flaga monitorująca stan połączenia
+    // Wyświetl powiadomienia zapisane w sessionStorage
+    updateNotificationList();
     // Obsługa otwarcia połączenia
     eventSource.onopen = () => {
         console.log('SSE connection established.');
@@ -27,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
     eventSource.onerror = (error) => {
         console.error('SSE connection error:', error);
         if (isConnectionOpen) {
-            // Wyświetl powiadomienie tylko, jeśli połączenie było wcześniej otwarte
             showNotification('Błąd połączenia z serwerem powiadomień.', true);
         }
         isConnectionOpen = false; // Połączenie zostało zamknięte
